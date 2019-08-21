@@ -22,6 +22,7 @@ from sklearn import metrics
 from model.TextCNN import TextCNN, TCNNConfig
 from data.data_loader import batch_iter, load_vocab
 from helper.utils import postprocess, save_variable_specs
+from helper.word2vec_helper import get_word_embedding
 
 
 base_dir = 'data/small/prepro'
@@ -36,6 +37,7 @@ test_y_dir = os.path.join(base_dir, 'test_y.txt')
 
 vocab_dir = os.path.join(base_dir, 'train_vocab.txt')
 vocab_y_dir = os.path.join(base_dir, 'vocab_y.txt')
+embed_dir = os.path.join(base_dir, 'vocab_emb.txt')
 
 save_dir = 'model/checkpoints/textcnn'
 save_path = os.path.join(save_dir, 'best_validation')  # 最佳验证结果保存路径
@@ -197,11 +199,23 @@ def test():
     print("Time usage:", time_dif)
 
 
+def read_emb_matrix(file_dir):
+    matrix = []
+    with open(file_dir, 'r', encoding='utf-8') as f:
+        line = f.readline()
+        while line:
+            matrix.append(np.asarray([float(x) for x in line.strip().split()]))
+            line = f.readline()
+    return np.asarray(matrix)
+
+
 if __name__ == '__main__':
     if len(sys.argv) != 2 or sys.argv[1] not in ['train', 'test']:
         raise ValueError("""usage: python run_cnn_c.py [train / test]""")
     print('Configuring CNN model...')
     config = TCNNConfig()
+    config.embed_matrix = read_emb_matrix(embed_dir)
+
     model = TextCNN(config)
     _, id2token_y = load_vocab(vocab_y_dir)
     if sys.argv[1] == 'train':

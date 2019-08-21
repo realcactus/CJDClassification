@@ -12,6 +12,7 @@ __author__ = 'Xiaosong Zhou'
 
 import numpy as np
 import tensorflow as tf
+from helper.word2vec_helper import get_word_embedding
 
 
 def ln(inputs, epsilon=1e-8, scope="ln"):
@@ -36,15 +37,43 @@ def ln(inputs, epsilon=1e-8, scope="ln"):
     return outputs
 
 
-def get_token_embeddings(vocab_size, num_units, zero_pad=True):
+def get_token_embeddings(vocab_size, embed_matrix, num_units):
     with tf.variable_scope("embed_weight_matrix", reuse=tf.AUTO_REUSE):
+        embed_matrix = np.asarray(embed_matrix)
+
+        # embeddings = tf.get_variable('weight_mat',
+        #                              dtype=tf.float32,
+        #                              shape=(vocab_size, num_units),
+        #                              initializer=tf.constant_initializer(embed_matrix),
+        #                              trainable=True)
+
         embeddings = tf.get_variable('weight_mat',
                                      dtype=tf.float32,
                                      shape=(vocab_size, num_units))
-        if zero_pad:
-            embeddings = tf.concat((tf.zeros(shape=[1, num_units]),
-                                    embeddings[1:, :]), 0)
+
+
+        # embeddings = tf.concat((tf.zeros(shape=[1, num_units]),
+        #                         embeddings[1:, :]), 0)
+
+        # if zero_pad:
+        #     embeddings = tf.concat((tf.zeros(shape=[1, num_units]),
+        #                             embeddings[1:, :]), 0)
     return embeddings
+
+
+def text_cnn(inputs, kernel_sizes, num_filters):
+    filters = str(kernel_sizes).split(',')
+    pooled_outputs = []
+    for filter_size in filters:
+        scope_name = str('conv-maxpool-%s' % filter_size)
+        with tf.device('/gpu:0'), tf.variable_scope(scope_name, reuse=tf.AUTO_REUSE):
+            conv = tf.layers.conv1d(inputs=inputs, filters=num_filters,
+                                    kernel_size=int(filter_size), name='conv%s' % filter_size)
+            conv = tf.nn.relu(conv)
+            gmp = tf.reduce_max(conv, reduction_indices=[1], name='gmp%s' % filter_size)
+        pooled_outputs.append(gmp)
+    pool = tf.concat(pooled_outputs, 1)
+    return pool
 
 
 def mlp(inputs, units, drop_rate, training=True):

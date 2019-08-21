@@ -51,12 +51,14 @@ def build_vocab_y(file_path, vocab_dir, vocab_size=5000):
 
 
 if __name__ == '__main__':
-    # build_vocab(file_path='../data/small/seg/train_x.txt',
-    #             vocab_dir='../data/small/prepro/train_vocab.txt',
-    #             vocab_size=30000)
-    # build_vocab_y(file_path='../data/small/train_y.txt',
-    #               vocab_dir='../data/small/prepro/vocab_y.txt',
-    #               vocab_size=30000)
-    pass
+    build_vocab(file_path='../data/legal_domain/seg/train_x_c.txt',
+                vocab_dir='../data/legal_domain/prepro/train_vocab_c.txt',
+                vocab_size=5000)
+    build_vocab(file_path='../data/legal_domain/seg/train_x_w.txt',
+                vocab_dir='../data/legal_domain/prepro/train_vocab_w.txt',
+                vocab_size=20000)
+    build_vocab_y(file_path='../data/legal_domain/train_y.txt',
+                  vocab_dir='../data/legal_domain/prepro/vocab_y.txt',
+                  vocab_size=30000)
 
 

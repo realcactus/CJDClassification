@@ -111,21 +111,40 @@ def read_data_y(file_dir):
 
 
 if __name__ == '__main__':
-    write_x_to_ids(seg_file='../data/small/seg/val_x.txt',
-                   vocab_file='../data/small/prepro/train_vocab.txt',
-                   save_file='../data/small/prepro/val.txt')
-    write_x_to_ids(seg_file='../data/small/seg/train_x.txt',
-                   vocab_file='../data/small/prepro/train_vocab.txt',
-                   save_file='../data/small/prepro/train.txt')
-    write_x_to_ids(seg_file='../data/small/seg/test_x.txt',
-                   vocab_file='../data/small/prepro/train_vocab.txt',
-                   save_file='../data/small/prepro/test.txt')
-    write_y_to_ids(y_file='../data/small/val_y.txt',
-                   vocab_file='../data/small/prepro/vocab_y.txt',
-                   save_file='../data/small/prepro/val_y.txt')
-    write_y_to_ids(y_file='../data/small/train_y.txt',
-                   vocab_file='../data/small/prepro/vocab_y.txt',
-                   save_file='../data/small/prepro/train_y.txt')
-    write_y_to_ids(y_file='../data/small/test_y.txt',
-                   vocab_file='../data/small/prepro/vocab_y.txt',
-                   save_file='../data/small/prepro/test_y.txt')
+    # val_c
+    write_x_to_ids(seg_file='../data/legal_domain/seg/val_x_c.txt',
+                   vocab_file='../data/legal_domain/prepro/train_vocab_c.txt',
+                   save_file='../data/legal_domain/prepro/val_c.txt')
+    # val_w
+    write_x_to_ids(seg_file='../data/legal_domain/seg/val_x_w.txt',
+                   vocab_file='../data/legal_domain/prepro/train_vocab_w.txt',
+                   save_file='../data/legal_domain/prepro/val_w.txt')
+
+    # train_c
+    write_x_to_ids(seg_file='../data/legal_domain/seg/train_x_c.txt',
+                   vocab_file='../data/legal_domain/prepro/train_vocab_c.txt',
+                   save_file='../data/legal_domain/prepro/train_c.txt')
+    # train_w
+    write_x_to_ids(seg_file='../data/legal_domain/seg/train_x_w.txt',
+                   vocab_file='../data/legal_domain/prepro/train_vocab_w.txt',
+                   save_file='../data/legal_domain/prepro/train_w.txt')
+
+    # test_c
+    write_x_to_ids(seg_file='../data/legal_domain/seg/test_x_c.txt',
+                   vocab_file='../data/legal_domain/prepro/train_vocab_c.txt',
+                   save_file='../data/legal_domain/prepro/test_c.txt')
+    # test_w
+    write_x_to_ids(seg_file='../data/legal_domain/seg/test_x_w.txt',
+                   vocab_file='../data/legal_domain/prepro/train_vocab_w.txt',
+                   save_file='../data/legal_domain/prepro/test_w.txt')
+
+    # y
+    write_y_to_ids(y_file='../data/legal_domain/val_y.txt',
+                   vocab_file='../data/legal_domain/prepro/vocab_y.txt',
+                   save_file='../data/legal_domain/prepro/val_y.txt')
+    write_y_to_ids(y_file='../data/legal_domain/train_y.txt',
+                   vocab_file='../data/legal_domain/prepro/vocab_y.txt',
+                   save_file='../data/legal_domain/prepro/train_y.txt')
+    write_y_to_ids(y_file='../data/legal_domain/test_y.txt',
+                   vocab_file='../data/legal_domain/prepro/vocab_y.txt',
+                   save_file='../data/legal_domain/prepro/test_y.txt')

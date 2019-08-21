@@ -29,7 +29,7 @@ def get_content(file_dict, mode='r', encoding='utf-8'):
     return contents
 
 
-def cut_word(sentence_file_path, save_file_path):
+def cut_word(sentence_file_path, save_file_path_w):
     contents_list = []
     with open(sentence_file_path, 'r', encoding='utf-8') as f:
         content = f.readline()
@@ -46,6 +46,8 @@ def cut_word(sentence_file_path, save_file_path):
             # 去除事实部分的 审理查明，***指控这种
             content = re.sub(r'^.+指控，', '', content)
             content = re.sub(r'^.+指控：', '', content)
+            content = re.sub(r'^.+诉称，', '', content)
+            content = re.sub(r'^.+诉称：', '', content)
             content = re.sub(r'经.*审理查明，', '', content)
             content = re.sub(r'经.*审理查明：', '', content)
             content = re.sub(r'经.*审理查明', '', content)
@@ -102,17 +104,52 @@ def cut_word(sentence_file_path, save_file_path):
             contents_list.append(res_list)
             content = f.readline()
 
-    with open(save_file_path, 'w', encoding='utf-8') as f:
+    with open(save_file_path_w, 'w', encoding='utf-8') as f:
         for line in contents_list:
+            f.write(' '.join(line) + '\n')
+
+
+def cut_character(sentence_file_path, save_file_path_c):
+    c_list = []
+    with open(sentence_file_path, 'r', encoding='utf-8') as f:
+        content = f.readline()
+        while content:
+            content = re.sub(r'\r', '', content)
+            content = re.sub(r'\n', '', content)
+
+            # 去除法条中的形式
+            content = re.sub(r'第.+条 ', '', content)
+
+            # 去除事实部分的 审理查明，***指控这种
+            content = re.sub(r'^.+指控，', '', content)
+            content = re.sub(r'^.+指控：', '', content)
+            content = re.sub(r'^.+诉称，', '', content)
+            content = re.sub(r'^.+诉称：', '', content)
+            content = re.sub(r'经.*审理查明，', '', content)
+            content = re.sub(r'经.*审理查明：', '', content)
+            content = re.sub(r'经.*审理查明', '', content)
+            c_list.append(list(content))
+            content = f.readline()
+    with open(save_file_path_c, 'w', encoding='utf-8') as f:
+        for line in c_list:
             f.write(' '.join(line) + '\n')
 
 
 if __name__ == '__main__':
     stopwords = get_content('stop_word.txt', 'r', 'utf-8')
     stopnames = get_content('name_dict.txt', 'r', 'utf-8')
-    # cut_word('../data/small/val_x.txt', '../data/small/seg/val_x.txt')
-    cut_word('../data/small/val_y_content.txt', '../data/small/seg/val_y_content.txt')
-    # cut_word('../data/small/train_x.txt', '../data/small/seg/train_x.txt')
-    cut_word('../data/small/train_y_content.txt', '../data/small/seg/train_y_content.txt')
-    # cut_word('../data/small/test_x.txt', '../data/small/seg/test_x.txt')
-    cut_word('../data/small/test_y_content.txt', '../data/small/seg/test_y_content.txt')
+    cut_word('../data/legal_domain/val_x.txt',
+             '../data/legal_domain/seg/val_x_w.txt')
+    cut_character('../data/legal_domain/val_x.txt',
+                  '../data/legal_domain/seg/val_x_c.txt')
+    # cut_word('../data/small/val_y_content.txt', '../data/small/seg/val_y_content.txt')
+    cut_word('../data/legal_domain/train_x.txt',
+             '../data/legal_domain/seg/train_x_w.txt')
+    cut_character('../data/legal_domain/train_x.txt',
+                  '../data/legal_domain/seg/train_x_c.txt')
+    # cut_word('../data/small/train_y_content.txt', '../data/small/seg/train_y_content.txt')
+    cut_word('../data/legal_domain/test_x.txt',
+             '../data/legal_domain/seg/test_x_w.txt')
+    cut_character('../data/legal_domain/test_x.txt',
+                  '../data/legal_domain/seg/test_x_c.txt')
+    # cut_word('../data/small/test_y_content.txt', '../data/small/seg/test_y_content.txt')

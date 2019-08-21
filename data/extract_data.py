@@ -11,7 +11,7 @@ __author__ = 'Xiaosong Zhou'
 # 从原始文件中提取数据，原始文件有两种形式，json以及csv
 
 import pandas as pd
-import xlrd
+# import xlrd
 import os
 import re
 
@@ -67,5 +67,28 @@ def read_data_from_csv(file_path, save_path):
     write_content(test_y_content_dir, df_test['statute_content'].values)
 
 
+def sep_x_y(file_dir):
+    # 把x,y写在一起的文件转化成两个文件
+    file_name = str(file_dir).strip().split('.txt')[0]
+    x_file = file_name + '_x.txt'
+    y_file = file_name + '_y.txt'
+    x_list = []
+    y_list = []
+    with open(file_dir, 'r', encoding='utf-8') as f:
+        line = f.readline()
+        while line:
+            label, content = line.strip().split('\t')
+            x_list.append(content)
+            y_list.append(label)
+            line = f.readline()
+    with open(x_file, 'w', encoding='utf-8') as f:
+        f.write('\n'.join(x_list))
+    with open(y_file, 'w', encoding='utf-8') as f:
+        f.write('\n'.join(y_list))
+
+
 if __name__ == '__main__':
-    read_data_from_csv('../data/small', '../data/small/')
+    # read_data_from_csv('../data/small', '../data/small/')
+    sep_x_y(file_dir='../data/legal_domain/train.txt')
+    sep_x_y(file_dir='../data/legal_domain/val.txt')
+    sep_x_y(file_dir='../data/legal_domain/test.txt')
