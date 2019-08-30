@@ -29,30 +29,30 @@ def test_word2vec(model_dir):
 
 def get_word_embedding(model_dir, vocab_dir, save_dir, embed_dim):
     # 这里的逻辑是，unk用一个随机emb维向量，pad用一个全0向量
-    w2v_model = KeyedVectors.load_word2vec_format(model_dir, binary=True)
-    # vocab = [line for line in open(vocab_dir, 'r', encoding='utf-8').read().splitlines()]
+    # w2v_model = KeyedVectors.load_word2vec_format(model_dir, binary=True)
+    w2v_model = KeyedVectors.load_word2vec_format(model_dir)
     vocab = open(vocab_dir, 'r', encoding='utf-8').read().splitlines()
     weight_matrix = []
-    unk_emb = np.asarray([-1 + 2 * np.random.rand() for _ in range(embed_dim)])
     unk_num = 0
+    unk_emb = w2v_model['<unk>']
     for i in range(len(vocab)):
         if i == 0:
             # pad
             weight_matrix.append(np.zeros(embed_dim, dtype='float32'))
         elif i == 1:
             # unk
-            # weight_matrix.append(unk_emb)
+            weight_matrix.append(unk_emb)
             # 用pad代替试试看
-            weight_matrix.append(np.zeros(embed_dim, dtype='float32'))
+            # weight_matrix.append(np.zeros(embed_dim, dtype='float32'))
         else:
             word = vocab[i]
             if word in w2v_model:
                 weight_matrix.append(np.asarray(w2v_model[word]))
             else:
-                # weight_matrix.append(unk_emb)
+                weight_matrix.append(unk_emb)
                 unk_num += 1
                 # 用pad代替试试看
-                weight_matrix.append(np.zeros(embed_dim, dtype='float32'))
+                # weight_matrix.append(np.zeros(embed_dim, dtype='float32'))
     # 写入
     with open(save_dir, 'w', encoding='utf-8') as f:
         for line in weight_matrix:
@@ -78,10 +78,16 @@ def train_w2v(file_dir):
 if __name__ == '__main__':
     # test_word2vec('../helper/word2vec/baike_26g_news_13g_novel_229g.bin')
 
-    get_word_embedding(model_dir='../helper/word2vec/baike_26g_news_13g_novel_229g.bin',
-                       vocab_dir='../data/small/prepro/train_vocab.txt',
-                       save_dir='../data/small/prepro/vocab_emb.txt',
-                       embed_dim=128)
+    # get_word_embedding(model_dir='../helper/word2vec/baike_26g_news_13g_novel_229g.bin',
+    #                    vocab_dir='../data/legal_domain/prepro/train_vocab_w.txt',
+    #                    save_dir='../data/legal_domain/prepro/vocab_emb.txt',
+    #                    embed_dim=128)
+
+    get_word_embedding(model_dir='../helper/word2vec/glove_vectors.txt',
+                       vocab_dir='../data/legal_domain/prepro/train_vocab_w.txt',
+                       save_dir='../data/legal_domain/prepro/vocab_emb.txt',
+                       embed_dim=100)
+
 
 
 

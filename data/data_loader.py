@@ -15,6 +15,7 @@ import os
 import re
 import numpy as np
 import tensorflow as tf
+import h5py
 
 
 def load_vocab(vocab_dir):
@@ -62,7 +63,7 @@ def get_word_to_id():
     pass
 
 
-def batch_iter(x, y, batch_size=64, shuffle=True):
+def batch_iter(x, x_w, x_sentence, y, batch_size=64, shuffle=True):
     """生成批次数据"""
     data_len = len(x)
     num_batch = int((data_len - 1) / batch_size) + 1
@@ -70,15 +71,19 @@ def batch_iter(x, y, batch_size=64, shuffle=True):
     if shuffle:
         indices = np.random.permutation(np.arange(data_len))
         x_shuffle = np.array(x)[indices]
+        x_shuffle_w = np.array(x_w)[indices]
+        x_shuffle_sentence = np.array(x_sentence)[indices]
         y_shuffle = np.array(y)[indices]
     else:
         x_shuffle = x[:]
+        x_shuffle_w = x_w[:]
+        x_shuffle_sentence = x_sentence[:]
         y_shuffle = y[:]
 
     for i in range(num_batch):
         start_id = i * batch_size
         end_id = min((i + 1) * batch_size, data_len)
-        yield x_shuffle[start_id:end_id], y_shuffle[start_id:end_id]
+        yield x_shuffle[start_id:end_id], x_shuffle_w[start_id:end_id], x_shuffle_sentence[start_id:end_id], y_shuffle[start_id:end_id]
         # 最后一组不到batch_size的组丢掉，因为rnn好像不允许这样
         # if (i + 1) * batch_size <= data_len:
         #     end_id = (i + 1) * batch_size
@@ -97,6 +102,22 @@ def read_data_x(file_dir, max_length):
     x_pad = tf.keras.preprocessing.sequence.pad_sequences(contents, max_length,
                                                           padding='post', truncating='post')
     return x_pad
+
+
+def read_data_x_from_h5(file_dir, mode):
+    # 该方法直接从h5文件中读到已经转换好的数据，不需要嵌入层
+    if mode == 'train':
+        open_file = h5py.File(file_dir, 'r')
+        data_train = open_file['train'][:]
+        data_val = open_file['val'][:]
+        open_file.close()
+        return data_train, data_val
+    elif mode == 'test':
+        open_file = h5py.File(file_dir, 'r')
+        data_test = open_file['test'][:]
+        open_file.close()
+        return data_test
+    return None
 
 
 def read_data_y(file_dir):

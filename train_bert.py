@@ -19,20 +19,22 @@ import numpy as np
 import tensorflow as tf
 from data.data_loader import read_data_x, read_data_y
 from sklearn import metrics
-from model.TextCNN import TextCNN, TCNNConfig
-from data.data_loader import batch_iter, load_vocab
+from model.TextBertCNN import TCNNBertConfig, TextCNNBert
+from data.data_loader import batch_iter, load_vocab, read_data_x_from_h5
 from helper.utils import postprocess, save_variable_specs
 from helper.word2vec_helper import get_word_embedding
 
 
 base_dir = 'data/legal_domain/prepro'
-train_dir = os.path.join(base_dir, 'train_c.txt')
+# h5_dir = os.path.join(base_dir, 'input_c_emb.h5')
+h5_dir = os.path.join(base_dir, 'emb_fine_tune.h5')
+h5_dir_sentence = os.path.join(base_dir, 'emb_sentences.h5')
+train_x_w_dir = os.path.join(base_dir, 'train_w.txt')
+val_x_w_dir = os.path.join(base_dir, 'val_w.txt')
+test_x_w_dir = os.path.join(base_dir, 'test_w.txt')
+
 train_y_dir = os.path.join(base_dir, 'train_y.txt')
-
-val_dir = os.path.join(base_dir, 'val_c.txt')
 val_y_dir = os.path.join(base_dir, 'val_y.txt')
-
-test_dir = os.path.join(base_dir, 'test_c.txt')
 test_y_dir = os.path.join(base_dir, 'test_y.txt')
 
 vocab_c_dir = os.path.join(base_dir, 'train_vocab_c.txt')
@@ -54,25 +56,27 @@ def get_time_dif(start_time):
     return timedelta(seconds=int(round(time_dif)))
 
 
-def feed_data(x_batch, y_batch, keep_prob):
+def feed_data(x_batch, x_batch_w, x_batch_sentence, y_batch, keep_prob):
     feed_dict = {
-        model.input_x_c: x_batch,
+        model.enc: x_batch,
+        model.enc_sentence: x_batch_sentence,
+        model.input_x_w: x_batch_w,
         model.input_y: y_batch,
         model.keep_prob: keep_prob
     }
     return feed_dict
 
 
-def evaluate(sess, x_, y_):
+def evaluate(sess, x_, x_w, x_sentence, y_):
     """评估在某一数据上的准确率和损失"""
     data_len = len(x_)
-    batch_eval = batch_iter(x_, y_, 128, shuffle=False)
+    batch_eval = batch_iter(x_, x_w, x_sentence, y_, 128, shuffle=False)
     total_loss = 0.0
     total_acc = 0.0
     total_pred_cls = []
-    for x_batch, y_batch in batch_eval:
+    for x_batch, x_batch_w, x_batch_sentence, y_batch in batch_eval:
         batch_len = len(x_batch)
-        feed_dict = feed_data(x_batch, y_batch, 1.0)
+        feed_dict = feed_data(x_batch, x_batch_w, x_batch_sentence, y_batch, 1.0)
         loss, acc, pred_cls = sess.run([model.loss, model.acc, model.y_pred_cls], feed_dict=feed_dict)
         total_loss += loss * batch_len
         total_acc += acc * batch_len
@@ -99,10 +103,14 @@ def train():
     print("Loading training and validation data...")
     # 载入训练集与验证集
     start_time = time.time()
-    x_train = read_data_x(train_dir, config.seq_length_c)
+    x_train, x_val = read_data_x_from_h5(file_dir=h5_dir, mode='train')
+    x_train_sentence, x_val_sentence = read_data_x_from_h5(file_dir=h5_dir_sentence, mode='train')
+    x_train_w = read_data_x(file_dir=train_x_w_dir, max_length=config.seq_length_w)
+    x_val_w = read_data_x(file_dir=val_x_w_dir, max_length=config.seq_length_w)
+
     y_train = read_data_y(train_y_dir)
-    x_val = read_data_x(val_dir, config.seq_length_c)
     y_val = read_data_y(val_y_dir)
+
     time_dif = get_time_dif(start_time)
     print("Time usage:", time_dif)
 
@@ -126,14 +134,14 @@ def train():
     total_batch = 0  # 总批次
     best_acc_val = 0.0  # 最佳验证集准确率
     last_improved = 0  # 记录上一次提升批次
-    require_improvement = 1000  # 如果超过1000轮未提升，提前结束训练
+    require_improvement = 500  # 如果超过1000轮未提升，提前结束训练
 
     flag = False
     for epoch in range(config.num_epochs):
         print('Epoch:', epoch + 1)
-        batch_train = batch_iter(x_train, y_train, config.batch_size)
-        for x_batch, y_batch in batch_train:
-            feed_dict = feed_data(x_batch, y_batch, config.dropout_keep_prob)
+        batch_train = batch_iter(x_train, x_train_w, x_train_sentence, y_train, config.batch_size)
+        for x_batch, x_batch_w, x_batch_sentence, y_batch in batch_train:
+            feed_dict = feed_data(x_batch, x_batch_w, x_batch_sentence, y_batch, config.dropout_keep_prob)
 
             if total_batch % config.save_per_batch == 0:
                 # 每多少轮次将训练结果写入tensorboard scalar
@@ -143,8 +151,9 @@ def train():
             if total_batch % config.print_per_batch == 0:
                 # 每多少轮次输出在训练集和验证集上的性能
                 feed_dict[model.keep_prob] = 1.0
+                # print(session.run(model.input_y, feed_dict=feed_dict).shape)
                 loss_train, acc_train = session.run([model.loss, model.acc], feed_dict=feed_dict)
-                loss_val, acc_val, pred_cls = evaluate(session, x_val, y_val)
+                loss_val, acc_val, pred_cls = evaluate(session, x_val, x_val_w, x_val_sentence, y_val)
 
                 if acc_val > best_acc_val:
                     # 保存最好结果
@@ -179,14 +188,18 @@ def train():
 def test():
     print("Loading test data...")
     start_time = time.time()
-    x_test = read_data_x(test_dir, config.seq_length_c)
+    x_test = read_data_x_from_h5(file_dir=h5_dir, mode='test')
+    x_test_sentence = read_data_x_from_h5(file_dir=h5_dir_sentence, mode='test')
+    x_test_w = read_data_x(file_dir=test_x_w_dir, max_length=config.seq_length_w)
+
     y_test = read_data_y(test_y_dir)
+
     session = tf.Session()
     session.run(tf.global_variables_initializer())
     saver = tf.train.Saver()
     saver.restore(sess=session, save_path=save_path)  # 读取保存的模型
     print('Testing...')
-    loss_test, acc_test, pred_cls = evaluate(session, x_test, y_test)
+    loss_test, acc_test, pred_cls = evaluate(session, x_test, x_test_w, x_test_sentence, y_test)
     msg = 'Test Loss: {0:>6.2}, Test Acc: {1:>7.2%}'
     print(msg.format(loss_test, acc_test))
     hypotheses = postprocess(pred_cls, id2token_y)
@@ -200,7 +213,7 @@ def test():
     print("Time usage:", time_dif)
 
 
-def read_emb_matrix(file_dir):
+def read_emb_matrix_w(file_dir):
     matrix = []
     with open(file_dir, 'r', encoding='utf-8') as f:
         line = f.readline()
@@ -214,14 +227,12 @@ if __name__ == '__main__':
     if len(sys.argv) != 2 or sys.argv[1] not in ['train', 'test']:
         raise ValueError("""usage: python run_cnn_c.py [train / test]""")
     print('Configuring CNN model...')
-    config = TCNNConfig()
+    config = TCNNBertConfig()
     config.vocab_size_c = len(open(vocab_c_dir, 'r', encoding='utf-8').readlines())
     config.vocab_size_w = len(open(vocab_w_dir, 'r', encoding='utf-8').readlines())
     config.num_classes = len(open(vocab_y_dir, 'r', encoding='utf-8').readlines())
-
-    # config.embed_matrix = read_emb_matrix(embed_dir)
-
-    model = TextCNN(config)
+    config.embed_matrix = read_emb_matrix_w(embed_dir)
+    model = TextCNNBert(config)
     _, id2token_y = load_vocab(vocab_y_dir)
     if sys.argv[1] == 'train':
         train()
