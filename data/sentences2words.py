@@ -138,18 +138,18 @@ def cut_character(sentence_file_path, save_file_path_c):
 if __name__ == '__main__':
     stopwords = get_content('stop_word.txt', 'r', 'utf-8')
     stopnames = get_content('name_dict.txt', 'r', 'utf-8')
-    cut_word('../data/legal_domain/val_x.txt',
-             '../data/legal_domain/seg/val_x_w.txt')
-    cut_character('../data/legal_domain/val_x.txt',
-                  '../data/legal_domain/seg/val_x_c.txt')
-    # cut_word('../data/small/val_y_content.txt', '../data/small/seg/val_y_content.txt')
-    cut_word('../data/legal_domain/train_x.txt',
-             '../data/legal_domain/seg/train_x_w.txt')
-    cut_character('../data/legal_domain/train_x.txt',
-                  '../data/legal_domain/seg/train_x_c.txt')
-    # cut_word('../data/small/train_y_content.txt', '../data/small/seg/train_y_content.txt')
-    cut_word('../data/legal_domain/test_x.txt',
-             '../data/legal_domain/seg/test_x_w.txt')
-    cut_character('../data/legal_domain/test_x.txt',
-                  '../data/legal_domain/seg/test_x_c.txt')
-    # cut_word('../data/small/test_y_content.txt', '../data/small/seg/test_y_content.txt')
+    cut_word('../data/cnews/val_x.txt',
+             '../data/cnews/seg/val_x_w.txt')
+    # cut_character('../data/legal_domain/val_x.txt',
+    #               '../data/legal_domain/seg/val_x_c.txt')
+
+    cut_word('../data/cnews/train_x.txt',
+             '../data/cnews/seg/train_x_w.txt')
+    # cut_character('../data/legal_domain/train_x.txt',
+    #               '../data/legal_domain/seg/train_x_c.txt')
+
+    cut_word('../data/cnews/test_x.txt',
+             '../data/cnews/seg/test_x_w.txt')
+    # cut_character('../data/legal_domain/test_x.txt',
+    #               '../data/legal_domain/seg/test_x_c.txt')
+

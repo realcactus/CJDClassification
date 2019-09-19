@@ -28,7 +28,9 @@ from helper.word2vec_helper import get_word_embedding
 base_dir = 'data/legal_domain/prepro'
 # h5_dir = os.path.join(base_dir, 'input_c_emb.h5')
 h5_dir = os.path.join(base_dir, 'emb_fine_tune.h5')
+# h5_dir = os.path.join(base_dir, 'emb_fine_tune_cnews.h5')
 h5_dir_sentence = os.path.join(base_dir, 'emb_sentences.h5')
+# h5_dir_sentence = os.path.join(base_dir, 'cnews_emb_sentences.h5')
 train_x_w_dir = os.path.join(base_dir, 'train_w.txt')
 val_x_w_dir = os.path.join(base_dir, 'val_w.txt')
 test_x_w_dir = os.path.join(base_dir, 'test_w.txt')
@@ -228,10 +230,10 @@ if __name__ == '__main__':
         raise ValueError("""usage: python run_cnn_c.py [train / test]""")
     print('Configuring CNN model...')
     config = TCNNBertConfig()
-    config.vocab_size_c = len(open(vocab_c_dir, 'r', encoding='utf-8').readlines())
+    # config.vocab_size_c = len(open(vocab_c_dir, 'r', encoding='utf-8').readlines())
     config.vocab_size_w = len(open(vocab_w_dir, 'r', encoding='utf-8').readlines())
     config.num_classes = len(open(vocab_y_dir, 'r', encoding='utf-8').readlines())
-    config.embed_matrix = read_emb_matrix_w(embed_dir)
+    # config.embed_matrix = read_emb_matrix_w(embed_dir)
     model = TextCNNBert(config)
     _, id2token_y = load_vocab(vocab_y_dir)
     if sys.argv[1] == 'train':

@@ -113,25 +113,22 @@ def attentive_pooling(inputs_conv, h_dim, attention_size, seq_len):
     # 输入inputs_conv应该是卷积后的张量，shape为(N, seq_len, filter_num)
     # 注意这个seq_len应该等于输入序列长度 - filter_size + 1
     # 128
-    filter_seq_len = inputs_conv.shape[2]
-    conv = tf.reshape(inputs_conv, [-1, filter_seq_len])
-    conv = tf.expand_dims(conv, axis=-1)
+    # filter_seq_len = 500
+    # h_dim = 128
+    input_trans = tf.transpose(inputs_conv, [1, 0, 2])
+    conv = tf.reshape(input_trans, [-1, h_dim])
+    conv_list = tf.split(conv, seq_len, 0)
 
-
-    trans = tf.transpose(inputs, [1, 0, 2])
-    att_input = tf.reshape(trans, [-1, h_dim])
-    att_input_list = tf.split(att_input, seq_len, 0)
-
-    with tf.variable_scope("sentence_attention", reuse=tf.AUTO_REUSE):
-        attention_w = tf.get_variable('attention_w',
+    with tf.variable_scope("attentive_pooling", reuse=tf.AUTO_REUSE):
+        attention_w = tf.get_variable('ap_w',
                                       dtype=tf.float32,
                                       shape=(h_dim, attention_size))
-        attention_b = tf.get_variable('attention_b',
+        attention_b = tf.get_variable('ap_b',
                                       dtype=tf.float32,
                                       shape=attention_size)
         u_list = []
         for t in range(seq_len):
-            u_t = tf.tanh(tf.matmul(att_input_list[t], attention_w) + attention_b)
+            u_t = tf.tanh(tf.matmul(conv_list[t], attention_w) + attention_b)
             u_list.append(u_t)
         u_w = tf.get_variable('attention_uw',
                               dtype=tf.float32,
@@ -143,7 +140,7 @@ def attentive_pooling(inputs_conv, h_dim, attention_size, seq_len):
         attn_zconcat = tf.concat(attn_z, axis=1)
         alpha = tf.nn.softmax(attn_zconcat)
         alpha_trans = tf.reshape(tf.transpose(alpha, [1, 0]), [seq_len, -1, 1])
-        final_output = tf.reduce_sum(att_input_list * alpha_trans, 0)
+        final_output = tf.reduce_sum(conv_list * alpha_trans, 0)
     return tf.reduce_sum(tf.transpose(alpha_trans, [1, 0, 2]), axis=2), final_output
 
 
@@ -157,7 +154,7 @@ def text_cnn_c(inputs, kernel_sizes, num_filters):
                                     kernel_size=int(filter_size), name='c-conv%s' % filter_size)
             conv = tf.nn.relu(conv)
 
-            k = 10
+            k = 2
             conv_trans = tf.transpose(conv, [0,2,1])
             gmp_trans, index_gmp = tf.nn.top_k(conv_trans, k)
             gmp = tf.transpose(gmp_trans, perm=[0, 2, 1])
@@ -165,9 +162,14 @@ def text_cnn_c(inputs, kernel_sizes, num_filters):
             # top-k-mean池化
             gmp = tf.reduce_mean(gmp, reduction_indices=[1])
 
-            # gmp = tf.reshape(gmp_trans, [-1, conv.shape[2] * k])
-
+            # max-pooling
             # gmp = tf.reduce_max(conv, reduction_indices=[1], name='c-gmp%s' % filter_size)
+
+            # attentive-pooling
+            # att_distribution, gmp = attentive_pooling(inputs_conv=conv,
+            #                                           h_dim=conv.shape[2],
+            #                                           attention_size=128,
+            #                                           seq_len=conv.shape[1])
         pooled_outputs.append(gmp)
     pool = tf.concat(pooled_outputs, 1)
     return pool
@@ -184,7 +186,7 @@ def text_cnn_w(inputs, kernel_sizes, num_filters):
             conv = tf.nn.relu(conv)
             # gmp = tf.reduce_max(conv, reduction_indices=[1], name='w-gmp%s' % filter_size)
 
-            k = 10
+            k = 2
             conv_trans = tf.transpose(conv, [0,2,1])
             gmp_trans, index_gmp = tf.nn.top_k(conv_trans, k)
             gmp = tf.transpose(gmp_trans, perm=[0, 2, 1])
@@ -195,6 +197,12 @@ def text_cnn_w(inputs, kernel_sizes, num_filters):
             # gmp = tf.reshape(gmp_trans, [-1, conv.shape[2] * k])
 
             # gmp = tf.reduce_max(conv, reduction_indices=[1], name='w-gmp%s' % filter_size)
+
+            # attention_pooling
+            # att_distribution, gmp = attentive_pooling(inputs_conv=conv,
+            #                                           h_dim=conv.shape[2],
+            #                                           attention_size=128,
+            #                                           seq_len=conv.shape[1])
 
         pooled_outputs.append(gmp)
     pool = tf.concat(pooled_outputs, 1)

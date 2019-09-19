@@ -89,6 +89,6 @@ def sep_x_y(file_dir):
 
 if __name__ == '__main__':
     # read_data_from_csv('../data/small', '../data/small/')
-    sep_x_y(file_dir='../data/legal_domain/train.txt')
-    sep_x_y(file_dir='../data/legal_domain/val.txt')
-    sep_x_y(file_dir='../data/legal_domain/test.txt')
+    sep_x_y(file_dir='../data/imdb/train.txt')
+    sep_x_y(file_dir='../data/imdb/val.txt')
+    sep_x_y(file_dir='../data/imdb/test.txt')

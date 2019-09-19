@@ -10,15 +10,16 @@ __author__ = 'Xiaosong Zhou'
 import re
 
 # 统计语料库中的序列长度分布
-
-# TRAIN_DATA_DIR = '../data/small/prepro/train.txt'
-TRAIN_DATA_DIR = '../data/legal_domain/train_x.txt'
+# TRAIN_DATA_DIR = '../data/legal_domain/train_x.txt'
+TRAIN_DATA_DIR = '../data/cnews/train_x.txt'
+# TRAIN_DATA_DIR = '../data/legal_domain/prepro/train_c.txt'
 # 训练集中最大长度8647个单词
 MAX_LENGTH = 8647
 distribution = [0 for i in range(87)]
 
 # 训练集中最大长度103个句子
-sentence_distribution = [0 for i in range(104)]
+# sentence_distribution = [0 for i in range(104)]
+sentence_distribution = [0 for i in range(648)]
 
 
 def get_max_length(file_path):

@@ -20,6 +20,7 @@ class TCNNBertConfig(object):
     seq_length_w = 800  # 词语级序列长度
     seq_length_c = 512  # 字符级序列长度
     sentence_length = 80  # 句子长度，代表一个样本最多有多少个句子
+    # sentence_length = 20  # 句子长度，代表一个样本最多有多少个句子
     num_classes = 183  # 类别数
     num_filters = 128  # 卷积核数目
     attention_size = 128  # 句子序列的attention size
@@ -69,13 +70,11 @@ class TextCNNBert(object):
         self.max_pool_c = text_cnn_c(inputs=self.enc,
                                      kernel_sizes=self.config.kernel_sizes_c,
                                      num_filters=self.config.num_filters)
-        # self.max_pool_c = tf.layers.dense(self.max_pool_c, self.config.hidden_dim / 2, activation=tf.nn.relu)
 
         # 词语级
         self.max_pool_w = text_cnn_w(inputs=self.enc_w,
                                      kernel_sizes=self.config.kernel_sizes_w,
                                      num_filters=self.config.num_filters)
-        # self.max_pool_w = tf.layers.dense(self.max_pool_w, self.config.hidden_dim / 2, activation=tf.nn.relu)
 
         # 句子级
         # self.max_pool_s = text_cnn_s(inputs=self.enc_sentence,
@@ -95,8 +94,6 @@ class TextCNNBert(object):
         self.pooled_outputs_cws = tf.concat(pooled_outputs_cws, 1)
         print('###################################################################')
         print(self.pooled_outputs_cws.shape)
-
-        # self.residual_fnn = residual_ff(self.max_pool_c, [self.config.hidden_dim * 2, self.max_pool_c.shape[1]], config)
 
         with tf.variable_scope("fnn", reuse=tf.AUTO_REUSE):
             # self.fnn_pool = tf.layers.dense(self.pooled_outputs_cws, self.config.hidden_dim * 8, activation=tf.nn.relu)
