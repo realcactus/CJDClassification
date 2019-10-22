@@ -11,13 +11,15 @@ __author__ = 'Xiaosong Zhou'
 import tensorflow as tf
 import numpy as np
 from model.modules import get_token_from_embeddings, mlp, score_layer, text_cnn_c, text_cnn_w, text_cnn_s, sentence_attention, residual_ff
-
+import os
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 class TCNNBertConfig(object):
     """CNN配置参数"""
     embedding_dim = 768  # BERT词向量维度
     embedding_dim_w = 100  # 随机词向量维度
     seq_length_w = 800  # 词语级序列长度
+    # seq_length_c = 512  # 字符级序列长度
     seq_length_c = 512  # 字符级序列长度
     sentence_length = 80  # 句子长度，代表一个样本最多有多少个句子
     # sentence_length = 20  # 句子长度，代表一个样本最多有多少个句子
@@ -100,6 +102,7 @@ class TextCNNBert(object):
             # self.fnn_pool = tf.layers.dense(self.fnn_pool, self.config.hidden_dim * 4, activation=tf.nn.relu)
             # self.fnn_pool = tf.layers.dense(self.fnn_pool, self.config.hidden_dim * 2, activation=tf.nn.relu)
 
+            # self.fnn_pool = tf.layers.dense(self.pooled_outputs_cws, self.config.hidden_dim * 2, activation=tf.nn.relu)
             self.fnn_pool = tf.layers.dense(self.pooled_outputs_cws, self.config.hidden_dim, activation=tf.nn.relu)
             self.fnn_pool = tf.contrib.layers.dropout(self.fnn_pool, self.keep_prob)
 

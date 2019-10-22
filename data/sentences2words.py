@@ -109,6 +109,29 @@ def cut_word(sentence_file_path, save_file_path_w):
             f.write(' '.join(line) + '\n')
 
 
+def cut_word_en(sentence_file_path, save_file_path_w):
+    contents_list = []
+    # with open(sentence_file_path, 'r', encoding='utf-8') as f:
+    #     contents_list_row = f.readlines()
+    with open(sentence_file_path, 'r', encoding='utf-8') as f:
+        content = f.readline()
+        while content:
+            # cut_list = content.split()
+            content_new = content.rstrip('\n')
+            content_new = content_new.lower()
+            cut_list = re.split('\.| |,', content_new)
+            while '' in cut_list:
+                cut_list.remove('')
+            contents_list.append(cut_list)
+            content = f.readline()
+    line_sum = 0
+    with open(save_file_path_w, 'w', encoding='utf-8') as f:
+        for line in contents_list:
+            line_sum += 1
+            f.write(' '.join(line) + '\n')
+    print('line: ' + str(line_sum))
+
+
 def cut_character(sentence_file_path, save_file_path_c):
     c_list = []
     with open(sentence_file_path, 'r', encoding='utf-8') as f:
@@ -140,16 +163,22 @@ if __name__ == '__main__':
     stopnames = get_content('name_dict.txt', 'r', 'utf-8')
     cut_word('../data/cnews/val_x.txt',
              '../data/cnews/seg/val_x_w.txt')
+    # cut_word_en('../data/imdb/val_x.txt',
+    #             '../data/imdb/seg/val_x_w.txt')
     # cut_character('../data/legal_domain/val_x.txt',
     #               '../data/legal_domain/seg/val_x_c.txt')
 
     cut_word('../data/cnews/train_x.txt',
              '../data/cnews/seg/train_x_w.txt')
+    # cut_word_en('../data/imdb/train_x.txt',
+    #             '../data/imdb/seg/train_x_w.txt')
     # cut_character('../data/legal_domain/train_x.txt',
     #               '../data/legal_domain/seg/train_x_c.txt')
 
     cut_word('../data/cnews/test_x.txt',
              '../data/cnews/seg/test_x_w.txt')
+    # cut_word_en('../data/imdb/test_x.txt',
+    #             '../data/imdb/seg/test_x_w.txt')
     # cut_character('../data/legal_domain/test_x.txt',
     #               '../data/legal_domain/seg/test_x_c.txt')
 

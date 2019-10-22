@@ -20,7 +20,7 @@ import tensorflow as tf
 from data.data_loader import read_data_x, read_data_y
 from sklearn import metrics
 from model.TextCNN import TextCNN, TCNNConfig
-from data.data_loader import batch_iter, load_vocab
+from data.data_loader import batch_iter_c, load_vocab
 from helper.utils import postprocess, save_variable_specs
 from helper.word2vec_helper import get_word_embedding
 
@@ -66,7 +66,7 @@ def feed_data(x_batch, y_batch, keep_prob):
 def evaluate(sess, x_, y_):
     """评估在某一数据上的准确率和损失"""
     data_len = len(x_)
-    batch_eval = batch_iter(x_, y_, 128, shuffle=False)
+    batch_eval = batch_iter_c(x_, y_, 128, shuffle=False)
     total_loss = 0.0
     total_acc = 0.0
     total_pred_cls = []
@@ -126,12 +126,12 @@ def train():
     total_batch = 0  # 总批次
     best_acc_val = 0.0  # 最佳验证集准确率
     last_improved = 0  # 记录上一次提升批次
-    require_improvement = 1000  # 如果超过1000轮未提升，提前结束训练
+    require_improvement = 500  # 如果超过1000轮未提升，提前结束训练
 
     flag = False
     for epoch in range(config.num_epochs):
         print('Epoch:', epoch + 1)
-        batch_train = batch_iter(x_train, y_train, config.batch_size)
+        batch_train = batch_iter_c(x_train, y_train, config.batch_size)
         for x_batch, y_batch in batch_train:
             feed_dict = feed_data(x_batch, y_batch, config.dropout_keep_prob)
 

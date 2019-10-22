@@ -63,6 +63,23 @@ def get_word_to_id():
     pass
 
 
+def batch_iter_c(x, y, batch_size=64, shuffle=True):
+    data_len = len(x)
+    num_batch = int((data_len - 1) / batch_size) + 1
+
+    if shuffle:
+        indices = np.random.permutation(np.arange(data_len))
+        x_shuffle = np.asarray(x)[indices]
+        y_shuffle = np.asarray(y)[indices]
+    else:
+        x_shuffle = x[:]
+        y_shuffle = y[:]
+    for i in range(num_batch):
+        start_id = i * batch_size
+        end_id = min((i + 1) * batch_size, data_len)
+        yield x_shuffle[start_id:end_id], y_shuffle[start_id:end_id]
+
+
 def batch_iter(x, x_w, x_sentence, y, batch_size=64, shuffle=True):
     """生成批次数据"""
     data_len = len(x)
@@ -138,9 +155,9 @@ if __name__ == '__main__':
     #                save_file='../data/legal_domain/prepro/val_c.txt')
 
     # val_w
-    write_x_to_ids(seg_file='../data/cnews/seg/val_x_w.txt',
-                   vocab_file='../data/cnews/prepro/train_vocab_w.txt',
-                   save_file='../data/cnews/prepro/val_w.txt')
+    write_x_to_ids(seg_file='../data/imdb/seg/val_x_w.txt',
+                   vocab_file='../data/imdb/prepro/train_vocab_w.txt',
+                   save_file='../data/imdb/prepro/val_w.txt')
 
     # train_c
     # write_x_to_ids(seg_file='../data/legal_domain/seg/train_x_c.txt',
@@ -148,9 +165,9 @@ if __name__ == '__main__':
     #                save_file='../data/legal_domain/prepro/train_c.txt')
 
     # train_w
-    write_x_to_ids(seg_file='../data/cnews/seg/train_x_w.txt',
-                   vocab_file='../data/cnews/prepro/train_vocab_w.txt',
-                   save_file='../data/cnews/prepro/train_w.txt')
+    write_x_to_ids(seg_file='../data/imdb/seg/train_x_w.txt',
+                   vocab_file='../data/imdb/prepro/train_vocab_w.txt',
+                   save_file='../data/imdb/prepro/train_w.txt')
 
     # test_c
     # write_x_to_ids(seg_file='../data/legal_domain/seg/test_x_c.txt',
@@ -158,17 +175,17 @@ if __name__ == '__main__':
     #                save_file='../data/legal_domain/prepro/test_c.txt')
 
     # test_w
-    write_x_to_ids(seg_file='../data/cnews/seg/test_x_w.txt',
-                   vocab_file='../data/cnews/prepro/train_vocab_w.txt',
-                   save_file='../data/cnews/prepro/test_w.txt')
+    write_x_to_ids(seg_file='../data/imdb/seg/test_x_w.txt',
+                   vocab_file='../data/imdb/prepro/train_vocab_w.txt',
+                   save_file='../data/imdb/prepro/test_w.txt')
 
     # y
-    write_y_to_ids(y_file='../data/cnews/val_y.txt',
-                   vocab_file='../data/cnews/prepro/vocab_y.txt',
-                   save_file='../data/cnews/prepro/val_y.txt')
-    write_y_to_ids(y_file='../data/cnews/train_y.txt',
-                   vocab_file='../data/cnews/prepro/vocab_y.txt',
-                   save_file='../data/cnews/prepro/train_y.txt')
-    write_y_to_ids(y_file='../data/cnews/test_y.txt',
-                   vocab_file='../data/cnews/prepro/vocab_y.txt',
-                   save_file='../data/cnews/prepro/test_y.txt')
+    write_y_to_ids(y_file='../data/imdb/val_y.txt',
+                   vocab_file='../data/imdb/prepro/vocab_y.txt',
+                   save_file='../data/imdb/prepro/val_y.txt')
+    write_y_to_ids(y_file='../data/imdb/train_y.txt',
+                   vocab_file='../data/imdb/prepro/vocab_y.txt',
+                   save_file='../data/imdb/prepro/train_y.txt')
+    write_y_to_ids(y_file='../data/imdb/test_y.txt',
+                   vocab_file='../data/imdb/prepro/vocab_y.txt',
+                   save_file='../data/imdb/prepro/test_y.txt')
